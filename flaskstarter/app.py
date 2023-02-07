@@ -6,6 +6,7 @@ from .config import DefaultConfig
 from .user import Users, UsersAdmin
 from .settings import settings
 from .tasks import tasks, MyTaskModelAdmin
+from .dcf import dcf_views
 from .frontend import frontend, ContactUsAdmin
 from .extensions import db, mail, cache, login_manager, admin
 from .utils import INSTANCE_FOLDER_PATH, pretty_date
@@ -17,7 +18,8 @@ __all__ = ['create_app']
 DEFAULT_BLUEPRINTS = (
     frontend,
     settings,
-    tasks
+    tasks,
+    dcf_views
 )
 
 
