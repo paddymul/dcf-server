@@ -169,8 +169,10 @@ def atom(token):
     if token == '#t': return True
     elif token == '#f': return False
     #elif token[0] == '"': return token[1:-1].decode('string_escape')
-    elif token[0] == '"': return token[1:-1]
-    try: return int(token)
+    elif token[0] == '"':
+        return token[1:-1]
+    try:
+        return int(token)
     except ValueError:
         try:
             return float(token)
@@ -415,9 +417,43 @@ def repl(prompt='lispy> ', inport=InPort(sys.stdin), out=sys.stdout):
                 print (out, to_string(val))
         except Exception as e:
             print('%s: %s' % (type(e).__name__, e))
+# def list_gen(lst):
+#     for x in lst:
+#         if isinstance(x, lst):
+#             yie list_parse(x)
 
-print(eval(parse('(display "paddy")')))
-print(eval([Sym('display'), "paddy"]))
+
+quotes = {"'":_quote, "`":_quasiquote, ",":_unquote, ",@":_unquotesplicing}
+def list_parse(lst):
+    ret_list = []
+    if isinstance(lst, list) == False:
+        return lst
+    lst_iter = iter(lst)
+    x = next(lst_iter)
+    try:
+        while True:
+            if isinstance(x, list):
+                ret_list.append(list_parse(x))
+            elif isinstance(x, dict) and len(x) == 1: #hack to make the aprser easier
+                if x.get('symbol', False):
+                    ret_list.append(Sym(x['symbol']))
+                elif x.get('quote', False):
+                    quote_char = x.get('quote')
+                    quote_func = quotes[quote_char]
+                    ret_list.append([quote_func, list_parse(next(lst))])
+            elif isinstance(x, dict):
+                raise("we dont't currently support atoms of dictionary")
+            else:
+                ret_list.append(x)
+            x = next(lst_iter)
+    except StopIteration:
+        return ret_list
+                    
+    
+
+# print(eval(parse('(display "paddy")')))
+# print(eval([Sym('display'), "paddy"]))
+print(eval(list_parse([{'symbol':'display'}, "paddy"])))
 # if __name__ == '__main__':
 #     repl()
 
