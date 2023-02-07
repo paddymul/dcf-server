@@ -14,7 +14,7 @@ dcf_views = Blueprint('dcf', __name__, url_prefix='/dcf')
 @dcf_views.route('/df/<id>', methods=['GET'])
 def read_df(id):
     df = pd.read_csv('./flaskstarter/dcf/sample-data/2014-01-citibike-tripdata.csv')
-    slice_start = request.args.get('slice_start', 0)
+    slice_start = int(request.args.get('slice_start', 0))
     slice_end = request.args.get('slice_end', False)
     if slice_end is not False:
         df = df[slice_start:int(slice_end)]
