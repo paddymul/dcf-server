@@ -407,6 +407,9 @@ def make_interpreter(extra_funcs=None):
         generic_eval(list_parse(x), local_env)
     return local_eval
     
+#TODO: move all macro table and fixture references into function arguments or make_interpreter (clsoed over)
+
+
 
 base_eval = make_interpreter()
 # print(eval(parse('(display "paddy")')))
