@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from .lispy import make_interpreter
+from .lispy import make_interpreter, s
 
 def dropcol(df, col):
     return df.drop(col, axis=1)
@@ -29,15 +29,14 @@ def test_fillna():
     assert filled_df.iloc[1]['a'] == 13
 
 
-
-def dcf_transform(df, instructions):
-    pass
+_eval = make_interpreter({'dropcol':dropcol, 'fillna':fillna})
+def dcf_transform(instructions, df):
+    return _eval(instructions, {'df':df})
 
 def test_interpret_fillna():
-
+    # I would like to have symbol:df be implicit,  I can do that later
     filled_df = dcf_transform(
-        sample_df,
-        [{'symbol':'fillna'}, 'a', 13])
+        [s('fillna'), s('df'), 'a', 13], sample_df)
     assert filled_df is not sample_df
     assert np.isnan(sample_df.iloc[1]['a'])
     assert np.isnan(sample_df.iloc[1]['c'])
@@ -45,5 +44,11 @@ def test_interpret_fillna():
     assert filled_df.iloc[1]['a'] == 13
 
                               
-
-    
+def test_interpret_dropcol():
+    # I would like to have symbol:df be implicit,  I can do that later
+    dropped_df = dcf_transform(
+        [s('dropcol'), s('df'), 'b'], sample_df)
+    assert dropped_df is not sample_df
+    #I want to make sure we haven't modified df
+    assert len(dropped_df.columns) != len(sample_df.columns)
+    assert 'b' not in dropped_df.columns
