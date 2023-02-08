@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from .lispy import make_interpreter, s
+import json
 
 def dropcol(df, col):
     return df.drop(col, axis=1)
@@ -52,3 +53,8 @@ def test_interpret_dropcol():
     #I want to make sure we haven't modified df
     assert len(dropped_df.columns) != len(sample_df.columns)
     assert 'b' not in dropped_df.columns
+
+
+print(json.dumps([s('dropcol'), s('df'), 'b']))
+
+    
