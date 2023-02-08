@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask
+from flask_cors import CORS, cross_origin
 
 from .config import DefaultConfig
 from .user import Users, UsersAdmin
@@ -23,6 +24,9 @@ DEFAULT_BLUEPRINTS = (
 )
 
 
+
+
+
 def create_app(config=None, app_name=None, blueprints=None):
     # Create a Flask app
 
@@ -42,6 +46,10 @@ def create_app(config=None, app_name=None, blueprints=None):
     configure_logging(app)
     configure_template_filters(app)
     configure_error_handlers(app)
+
+
+    cors = CORS(app)
+    app.config['CORS_HEADERS'] = 'Content-Type'
 
     return app
 

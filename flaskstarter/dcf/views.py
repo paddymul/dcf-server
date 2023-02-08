@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
+from flask_cors import cross_origin
 from ..extensions import db
 import json
 
@@ -11,7 +12,10 @@ dcf_views = Blueprint('dcf', __name__, url_prefix='/dcf')
 
 #make an @serve_df decorator that deals with query params and converting the df
 
+
+
 @dcf_views.route('/df/<id>', methods=['GET'])
+@cross_origin()
 def read_df(id):
     df = pd.read_csv('./flaskstarter/dcf/sample-data/2014-01-citibike-tripdata.csv')
     slice_start = int(request.args.get('slice_start', 0))
