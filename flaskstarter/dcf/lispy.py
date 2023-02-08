@@ -456,6 +456,7 @@ def test_make_interpreter():
         return num+5
 
     _eval = make_interpreter({'always5':always5, 'add5':add5})
+    #_eval = make_interpreter({always5, add5})
     assert _eval([s('always5')]) == 5
     
 
