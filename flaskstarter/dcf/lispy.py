@@ -211,6 +211,8 @@ def make_interpreter(extra_funcs=None):
     else:
         ef = extra_funcs
 
+    local_env = add_globals(Env())
+    local_env.update(ef)
 
 
     def generic_eval(x, env):
@@ -341,16 +343,12 @@ def make_interpreter(extra_funcs=None):
     
     
     
-    local_env = add_globals(Env())
 
     _quote, _if, _set, _define, _lambda, _begin, _definemacro, = map(Sym, 
     "quote   if   set!  define   lambda   begin   define-macro".split())
     
     _quasiquote, _unquote, _unquotesplicing = map(Sym,
     "quasiquote   unquote   unquote-splicing".split())
-
-
-
 
     _append, _cons, _let = map(Sym, "append cons let".split())
 
@@ -448,5 +446,16 @@ def test_extra_env():
     assert base_eval([s('+'), s('foo'), 1]) == 6
     
 
+    
+
+def test_make_interpreter():
+    def always5():
+        return 5
+
+    def add5(num):
+        return num+5
+
+    _eval = make_interpreter({'always5':always5, 'add5':add5})
+    assert _eval([s('always5')]) == 5
     
 

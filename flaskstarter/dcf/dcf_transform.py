@@ -21,10 +21,29 @@ def test_dropcol():
 
 def test_fillna():
     filled_df = fillna(sample_df, 'a', 13)
+
     assert filled_df is not sample_df
     assert np.isnan(sample_df.iloc[1]['a'])
     assert np.isnan(sample_df.iloc[1]['c'])
     assert np.isnan(filled_df.iloc[1]['c'])
     assert filled_df.iloc[1]['a'] == 13
+
+
+
+def dcf_transform(df, instructions):
+    pass
+
+def test_interpret_fillna():
+
+    filled_df = dcf_transform(
+        sample_df,
+        [{'symbol':'fillna'}, 'a', 13])
+    assert filled_df is not sample_df
+    assert np.isnan(sample_df.iloc[1]['a'])
+    assert np.isnan(sample_df.iloc[1]['c'])
+    assert np.isnan(filled_df.iloc[1]['c'])
+    assert filled_df.iloc[1]['a'] == 13
+
+                              
 
     
