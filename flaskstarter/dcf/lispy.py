@@ -122,9 +122,13 @@ class Env(dict):
             self.update(zip(parms,args))
     def find(self, var):
         "Find the innermost Env where var appears."
-        if var in self: return self
-        elif self.outer is None: raise LookupError(var)
-        else: return self.outer.find(var)
+        if var in self:
+            return self
+        elif self.outer is None:
+            raise LookupError(var)
+        else:
+            return self.outer.find(var)
+
 isa = isinstance
 def is_pair(x): return x != [] and isa(x, list)
 def cons(x, y): return [x]+y
@@ -403,49 +407,46 @@ def make_interpreter(extra_funcs=None):
     #      [_quasiquote, [_unquote, [Sym('car'), Sym('args')]], [Sym('and'), [_unquotesplicing, [Sym('cdr'), Sym('args')]]], False]]]]]]
     # generic_eval(and_def, local_env)
 
-    def local_eval(x):
-        generic_eval(list_parse(x), local_env)
+    def local_eval(x, extra_env=local_env):
+        if extra_env is not local_env:
+            new_env = Env()
+            new_env.update(local_env.copy())
+            new_env.update(extra_env)
+            return generic_eval(list_parse(x), new_env)
+        return generic_eval(list_parse(x), local_env)
     return local_eval
     
 #TODO: move all macro table and fixture references into function arguments or make_interpreter (clsoed over)
 
 
 
+
+
 base_eval = make_interpreter()
 # print(eval(parse('(display "paddy")')))
 # print(eval([Sym('display'), "paddy"]))
-print(base_eval([{'symbol':'display'}, "paddy"]))
+
+
+#print(base_eval([{'symbol':'display'}, "paddy"]))
 #print(base_eval(list_parse([{'symbol':'display'}, "paddy"])))
 # if __name__ == '__main__':
 #     repl()
     
+#print(base_eval([{'symbol':'define'}, 'foo', 5]))
+def s(symbol_name):
+    return {'symbol':symbol_name}
+
+def test_extra_env():
+
+    #verify that we can define a variable
+    assert base_eval([s('begin'), [s('define'), 'foo', 5], [s('+'), s('foo'), 1]]  ) == 6
+
+    #verify that referencing a variable with an env passed in resolves properly
+    assert base_eval([s('+'), s('foo'), 1], {'foo':20}) == 21
+
+    #verify that the original env is untouched
+    assert base_eval([s('+'), s('foo'), 1]) == 6
     
+
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
