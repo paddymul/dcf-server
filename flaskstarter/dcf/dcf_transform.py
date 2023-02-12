@@ -88,6 +88,11 @@ def fillna_py(df, col, val):
 _convert_to_python = make_interpreter({'dropcol':dropcol_py, 'fillna':fillna_py})
 
 def dcf_to_py(instructions):
+    #I would prefer to implement this with a macro named something
+    #like 'clean' that is implemented for the _convert_to_python
+    #interpreter to return a string code block, and for the real DCF
+    #interpreter as 'begin'... that way the exact same instructions
+    #could be sent to either interpreter.  For now, this will do
     individual_instructions =  [x for x in map(lambda x:_convert_to_python(x, {'df':5}), instructions)]
     code_block =  '\n'.join(individual_instructions)
 
