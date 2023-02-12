@@ -78,3 +78,20 @@ def test_interpret_multiple_dropcol():
 print(json.dumps([s('dropcol'), s('df'), 'b']))
 
     
+def dropcol_py(df, col):
+    return "    df.drop(%s, axis=1, inplace=True)" % col
+
+def fillna_py(df, col, val):
+    return "    df.fillna({'%s':%r}, inplace=True)" % col, val
+
+
+_convert_to_python = make_interpreter({'dropcol':dropcol_py, 'fillna':fillna_py})
+
+def dcf_to_py(instructions):
+    individual_instructions =  [x for x in map(lambda x:_convert_to_python(x, {'df':5}), instructions)]
+    return '\n'.join(individual_instructions)
+
+
+def test_to_py():
+    assert dcf_to_py([[s('dropcol'), s('df'), 'b'],
+                      [s('dropcol'), s('df'), 'c']]) == "foo"
