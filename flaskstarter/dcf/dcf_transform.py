@@ -89,9 +89,14 @@ _convert_to_python = make_interpreter({'dropcol':dropcol_py, 'fillna':fillna_py}
 
 def dcf_to_py(instructions):
     individual_instructions =  [x for x in map(lambda x:_convert_to_python(x, {'df':5}), instructions)]
-    return '\n'.join(individual_instructions)
+    code_block =  '\n'.join(individual_instructions)
 
+    return "def clean(df):\n" + code_block
+
+expected_py_output = """def clean(df):
+    df.drop(b, axis=1, inplace=True)
+    df.drop(c, axis=1, inplace=True)"""
 
 def test_to_py():
     assert dcf_to_py([[s('dropcol'), s('df'), 'b'],
-                      [s('dropcol'), s('df'), 'c']]) == "foo"
+                      [s('dropcol'), s('df'), 'c']]) == expected_py_output
