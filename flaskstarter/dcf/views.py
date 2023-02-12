@@ -30,13 +30,10 @@ def read_df(id):
 @cross_origin()
 def transform_df(id):
     df = pd.read_csv('./flaskstarter/dcf/sample-data/2014-01-citibike-tripdata.csv')
-
-
     instructions = json.loads(request.args.get('instructions', None))
 
     #slice before or after??? probably after, otherwise run a dcf command
     df = dcf_transform(instructions, df)
-
 
     slice_start = int(request.args.get('slice_start', 0))
     slice_end = request.args.get('slice_end', False)
