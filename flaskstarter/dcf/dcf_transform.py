@@ -82,7 +82,7 @@ def dropcol_py(df, col):
     return "    df.drop('%s', axis=1, inplace=True)" % col
 
 def fillna_py(df, col, val):
-    return "    df.fillna({'%s':%r}, inplace=True)" % col, val
+    return "    df.fillna({'%s':%r}, inplace=True)" % (col, val)
 
 
 _convert_to_python = make_interpreter({'dropcol':dropcol_py, 'fillna':fillna_py})
