@@ -79,7 +79,7 @@ print(json.dumps([s('dropcol'), s('df'), 'b']))
 
     
 def dropcol_py(df, col):
-    return "    df.drop(%s, axis=1, inplace=True)" % col
+    return "    df.drop('%s', axis=1, inplace=True)" % col
 
 def fillna_py(df, col, val):
     return "    df.fillna({'%s':%r}, inplace=True)" % col, val
@@ -99,8 +99,8 @@ def dcf_to_py(instructions):
     return "def clean(df):\n" + code_block
 
 expected_py_output = """def clean(df):
-    df.drop(b, axis=1, inplace=True)
-    df.drop(c, axis=1, inplace=True)"""
+    df.drop('b', axis=1, inplace=True)
+    df.drop('c', axis=1, inplace=True)"""
 
 def test_to_py():
     assert dcf_to_py([[s('dropcol'), s('df'), 'b'],
