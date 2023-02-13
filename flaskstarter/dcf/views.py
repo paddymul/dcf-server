@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from flask_cors import cross_origin
 from ..extensions import db
 import json
-from .dcf_transform import dcf_transform, s
+from .dcf_transform import dcf_transform, s, dcf_to_py as dcf_to_py_core
 #from lispy import s
 dcf_views = Blueprint('dcf', __name__, url_prefix='/dcf')
 
@@ -40,4 +40,21 @@ def transform_df(id):
     if slice_end is not False:
         df = df[slice_start:int(slice_end)]
     return json.loads(df.to_json(orient='table', indent=2))
+
+
+@dcf_views.route('/dcf_to_py/<id>', methods=['GET'])
+@cross_origin()
+def dcf_to_py(id):
+    instructions = json.loads(request.args.get('instructions', None))
+    #return dcf_to_py(instructions)
+    try:
+        print("instructions", instructions, type(instructions))
+        py_string = dcf_to_py_core(instructions)
+        print("py_string", py_string)
+        return dict(py=py_string)
+    except Exception as e:
+        print("e", e)
+        return "error"
+    
+    
 

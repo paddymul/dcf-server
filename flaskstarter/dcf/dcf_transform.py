@@ -105,3 +105,7 @@ expected_py_output = """def clean(df):
 def test_to_py():
     assert dcf_to_py([[s('dropcol'), s('df'), 'b'],
                       [s('dropcol'), s('df'), 'c']]) == expected_py_output
+    assert dcf_to_py(
+        [
+            [{'symbol': 'dropcol'}, {'symbol': 'df'}, 'starttime'],
+            [{'symbol': 'dropcol'}, {'symbol': 'df'}, 'stoptime']])== "asdf"
