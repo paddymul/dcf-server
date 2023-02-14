@@ -5,7 +5,7 @@
 ################ Symbol, Procedure, classes
 
 from __future__ import division
-import re, sys, StringIO
+import re, sys, io
 
 class Symbol(str): pass
 
@@ -32,7 +32,8 @@ class Procedure(object):
 def parse(inport):
     "Parse a program: read and expand/error-check it."
     # Backwards compatibility: given a str, convert it to an InPort
-    if isinstance(inport, str): inport = InPort(StringIO.StringIO(inport))
+    if isinstance(inport, str):
+        inport = InPort(io.StringIO(inport))
     return expand(read(inport), toplevel=True)
 
 eof_object = Symbol('#<eof-object>') # Note: uninterned; can't be read
@@ -114,9 +115,10 @@ def repl(prompt='lispy> ', inport=InPort(sys.stdin), out=sys.stdout):
             x = parse(inport)
             if x is eof_object: return
             val = eval(x)
-            if val is not None and out: print >> out, to_string(val)
+            if val is not None and out:
+                print(to_string(val))
         except Exception as e:
-            print '%s: %s' % (type(e).__name__, e)
+            print('%s: %s' % (type(e).__name__, e))
 
 ################ Environment class
 
@@ -150,6 +152,8 @@ def callcc(proc):
     except RuntimeWarning as w:
         if w is ball: return ball.retval
         else: raise w
+isa = isinstance
+
 
 def add_globals(self):
     "Add some Scheme standard procedures."
@@ -157,7 +161,7 @@ def add_globals(self):
     self.update(vars(math))
     self.update(vars(cmath))
     self.update({
-     '+':op.add, '-':op.sub, '*':op.mul, '/':op.div, 'not':op.not_, 
+     '+':op.add, '-':op.sub, '*':op.mul, '/':op.truediv, 'not':op.not_, 
      '>':op.gt, '<':op.lt, '>=':op.ge, '<=':op.le, '=':op.eq, 
      'equal?':op.eq, 'eq?':op.is_, 'length':len, 'cons':cons,
      'car':lambda x:x[0], 'cdr':lambda x:x[1:], 'append':op.add,  
@@ -173,7 +177,7 @@ def add_globals(self):
      'display':lambda x,port=sys.stdout:port.write(x if isa(x,str) else to_string(x))})
     return self
 
-isa = isinstance
+
 
 global_env = add_globals(Env())
 
