@@ -40,7 +40,7 @@ def dcf_transform(instructions, df):
 def test_interpret_fillna():
     # I would like to have symbol:df be implicit,  I can do that later
     filled_df = dcf_transform(
-        [s('fillna'), s('df'), 'a', 13], sample_df)
+         [s('fillna'), s('df'), 'a', 13], sample_df)
     assert filled_df is not sample_df
     assert np.isnan(sample_df.iloc[1]['a'])
     assert np.isnan(sample_df.iloc[1]['c'])
@@ -109,3 +109,77 @@ def test_to_py():
         [
             [{'symbol': 'dropcol'}, {'symbol': 'df'}, 'starttime'],
             [{'symbol': 'dropcol'}, {'symbol': 'df'}, 'stoptime']])== "asdf"
+
+
+
+def fillna(df, col, val):
+    df.fillna({col:val}, inplace=True)
+    return df
+
+def fillna_py(df, col, val):
+    return "    df.fillna({'%s':%r}, inplace=True)" % (col, val)
+
+
+class Arguments(object):
+
+    df = "df"
+    column_name = "column_name"
+    of_type = "of_type"
+
+class TransformType(object):
+
+    column = "column"
+    multi_column = "multi_column"
+    shape_change = "shape_change"
+
+class Transform(object):
+
+    t_type = TransformType.column
+    transform = fillna
+    transform_to_py = fillna_py
+
+    argument_types = [Arguments.df, Arguments.column_name, Arguments.of_type]
+    argument_names = ["df", "col", "val"]
+    command_template = [s('fillna'), s('df'), "col", "val"]
+    
+
+class FillNA(Transform):
+    t_type = TransformType.column
+
+    @staticmethod 
+    def transform(df, col, val):
+        df.fillna({col:val}, inplace=True)
+        return df
+
+    @staticmethod 
+    def transform_to_py(df, col, val):
+        return "    df.fillna({'%s':%r}, inplace=True)" % (col, val)
+
+    arguments = [Arguments.df, Arguments.column_name, Arguments.of_type]
+    argument_names = ["df", "col", "val"]
+    command_template = [s('fillna'), s('df'), "col", "val"]
+
+
+class OneHot(Transform):
+    t_type = TransformType.column
+
+    @staticmethod 
+    def transform(df, col, val):
+        one_hot = pd.get_dummies(df[col])
+        df = df.drop(col, axis=1, inplace=True)
+        #how to make this inplace?
+        return df.join(one_hot) 
+
+
+    @staticmethod 
+    def transform_to_py(df, col, val):
+        commands = [
+            "    one_hot = pd.get_dummies(df['%s'])" % (col),
+            "    df.drop('%s', inplace=True)" % (col),
+            "    df = df.join(one_hot)"]
+        return "\n".join(commands)
+
+    arguments = [Arguments.df, Arguments.column_name, Arguments.of_type]
+    
+    
+
