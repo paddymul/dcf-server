@@ -36,16 +36,21 @@ class InPort(object):
             if token != '' and not token.startswith(';'):
                 return token
 
-
 def to_string(x):
     "Convert a Python object back into a Lisp-readable string."
     if x is True: return "#t"
     elif x is False: return "#f"
     elif isa(x, Symbol): return x
     elif isa(x, str): return '"%s"' % x.encode('string_escape').replace('"',r'\"')
-    elif isa(x, list): return '('+' '.join(map(to_string, x))+')'
+    elif isa(x, list):
+        #return '('+' '.join(map(to_string, x))+')'
+        fragments = [y for y in map(to_string, x)]
+        mid_string = ' '.join(fragments)
+        return '('+ mid_string + ')'
     elif isa(x, complex): return str(x).replace('j', 'i')
     else: return str(x)
+
+
 
 def load(filename):
     "Eval every expression from a file."
@@ -140,8 +145,15 @@ def add_globals(env):
 #     return self
 
 
-def make_interpreter():
+
+def make_interpreter(extra_funcs=None, extra_macros=None):
+    if extra_funcs is None:
+        ef = {}
+    else:
+        ef = extra_funcs
+
     global_env = add_globals(Env())
+    global_env.update(ef)
 
     ################ eval (tail recursive)
 
@@ -183,10 +195,37 @@ def make_interpreter():
                     return proc(*exps)
 
 
-    def Sym(s, symbol_table={}):
+    def list_parse(lst):
+        ret_list = []
+        if isinstance(lst, list) == False:
+            return lst
+        lst_iter = iter(lst)
+        x = next(lst_iter)
+        try:
+            while True:
+                if isinstance(x, list):
+                    ret_list.append(list_parse(x))
+                elif isinstance(x, dict) and len(x) == 1: #hack to make the aprser easier
+                    if x.get('symbol', False):
+                        ret_list.append(Sym(x['symbol']))
+                    elif x.get('quote', False):
+                        quote_char = x.get('quote')
+                        quote_func = quotes[quote_char]
+                        ret_list.append([quote_func, list_parse(next(lst))])
+                elif isinstance(x, dict):
+                    raise("we dont't currently support atoms of dictionary")
+                else:
+                    ret_list.append(x)
+                x = next(lst_iter)
+        except StopIteration:
+            return ret_list
+    
+    symbol_table = {}
+    def Sym(s, symbol_table=symbol_table):
         "Find or create unique Symbol entry for str s in symbol table."
         if s not in symbol_table: symbol_table[s] = Symbol(s)
         return symbol_table[s]
+
     
     _quote, _if, _set, _define, _lambda, _begin, _definemacro, = map(Sym, 
     "quote   if   set!  define   lambda   begin   define-macro".split())
@@ -256,7 +295,7 @@ def make_interpreter():
         elif x[0] is _if:                    
             if len(x)==3: x = x + [None]     # (if t c) => (if t c None)
             require(x, len(x)==4)
-            return map(expand, x)
+            return [y for y in map(expand, x)]
         elif x[0] is _set:                   
             require(x, len(x)==3); 
             var = x[1]                       # (set! non-var exp) => Error
@@ -295,7 +334,7 @@ def make_interpreter():
         elif isa(x[0], Symbol) and x[0] in macro_table:
             return expand(macro_table[x[0]](*x[1:]), toplevel) # (m arg...) 
         else:                                #        => macroexpand if m isa macro
-            return map(expand, x)            # (f arg...) => expand each
+            return [y for y in map(expand, x)]            # (f arg...) => expand each
     
     def require(x, predicate, msg="wrong length"):
         "Signal a syntax error if predicate is false."
@@ -325,10 +364,25 @@ def make_interpreter():
         require(x, all(isa(b, list) and len(b)==2 and isa(b[0], Symbol)
                        for b in bindings), "illegal binding list")
         vars, vals = zip(*bindings)
-        return [[_lambda, list(vars)]+map(expand, body)] + map(expand, vals)
+        #return [[_lambda, list(vars)]+map(expand, body)] + map(expand, vals)
+        expanded_body = [y for y in map(expand, body)]
+        expanded_vals = [y for y in map(expand, vals)]
+        return [[_lambda, list(vars)]+expanded_body] + expanded_vals
     
     macro_table = {_let:let} ## More macros can go here
-    return eval, parse
+    def lisp_eval(expr):
+        eval(parse(expr))
+
+    def local_eval(x, extra_env=global_env):
+        if extra_env is not global_env:
+            new_env = Env()
+            new_env.update(global_env.copy())
+            new_env.update(extra_env)
+            return eval(expand(list_parse(x), toplevel=True), new_env)
+        #return generic_eval(expand(list_parse(x), macro_table, symbol_table, toplevel=True), local_env)
+        return eval(expand(list_parse(x), toplevel=True), global_env)
+
+    return local_eval, lisp_eval
 
 base_eval, parse = make_interpreter()
 base_eval(parse("""(begin
@@ -345,8 +399,47 @@ base_eval(parse("""(begin
 # if __name__ == '__main__':
 #     repl()
     
+def s(symbol_name):
+    return {'symbol':symbol_name}
     
     
+def test_extra_env():
+    #verify that we can define a variable
+    assert base_eval([s('begin'), [s('define'), 'foo', 5], [s('+'), s('foo'), 1]]  ) == 6
+
+    #verify that referencing a variable with an env passed in resolves properly
+    assert base_eval([s('+'), s('foo'), 1], {'foo':20}) == 21
+
+    #verify that the original env is untouched
+    assert base_eval([s('+'), s('foo'), 1]) == 6
+    
+
+    
+
+def test_make_interpreter():
+    def always5():
+        return 5
+
+    def add5(num):
+        return num+5
+
+    _eval = make_interpreter({'always5':always5, 'add5':add5})
+    #_eval = make_interpreter({always5, add5})
+    assert _eval([s('always5')]) == 5
+
+
+
+def always5():
+    return 5
+
+def add5(num):
+    return num+5
+
+_eval, _parse = make_interpreter({'always5':always5, 'add5':add5})
+#_eval = make_interpreter({always5, add5})
+assert _eval([s('always5')]) == 5
+
+
     
     
     
