@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from .lispy_orig import make_interpreter, s
+from .lispy import make_interpreter, s
 import json
 
 def dropcol(df, col):
