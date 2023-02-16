@@ -32,7 +32,7 @@ def test_fillna():
     assert filled_df.iloc[1]['a'] == 13
 
 
-_eval = make_interpreter({'dropcol':dropcol, 'fillna':fillna})
+_eval, raw_parse = make_interpreter({'dropcol':dropcol, 'fillna':fillna})
 def dcf_transform(instructions, df):
     df_copy = df.copy()
     return _eval(instructions, {'df':df_copy})
@@ -85,7 +85,7 @@ def fillna_py(df, col, val):
     return "    df.fillna({'%s':%r}, inplace=True)" % (col, val)
 
 
-_convert_to_python = make_interpreter({'dropcol':dropcol_py, 'fillna':fillna_py})
+_convert_to_python, _convert_to_py_lisp = make_interpreter({'dropcol':dropcol_py, 'fillna':fillna_py})
 
 def dcf_to_py(instructions):
     #I would prefer to implement this with a macro named something
