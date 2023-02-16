@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from .lispy import make_interpreter, s
+from .lispy_orig import make_interpreter, s
 import json
 
 def dropcol(df, col):
@@ -32,7 +32,7 @@ def test_fillna():
     assert filled_df.iloc[1]['a'] == 13
 
 
-_eval = make_interpreter({'dropcol':dropcol, 'fillna':fillna})
+_eval, raw_parse = make_interpreter({'dropcol':dropcol, 'fillna':fillna})
 def dcf_transform(instructions, df):
     df_copy = df.copy()
     return _eval(instructions, {'df':df_copy})
