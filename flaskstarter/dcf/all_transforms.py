@@ -73,21 +73,21 @@ class DropCol(Transform):
         return df
 
     @staticmethod 
-    def transform_to_py(df, col, val):
+    def transform_to_py(df, col):
         return "    df.drop('%s', axis=1, inplace=True)" % col
 
 class OneHot(Transform):
     command_default = [s('onehot'), s('df'), "col"]
     command_pattern = [None]
     @staticmethod 
-    def transform(df, col, val):
+    def transform(df, col):
         one_hot = pd.get_dummies(df[col])
-        df = df.drop(col, axis=1, inplace=True)
+        df.drop(col, axis=1, inplace=True)
         #how to make this inplace?
         return df.join(one_hot) 
 
     @staticmethod 
-    def transform_to_py(df, col, val):
+    def transform_to_py(df, col):
         commands = [
             "    one_hot = pd.get_dummies(df['%s'])" % (col),
             "    df.drop('%s', inplace=True)" % (col),
