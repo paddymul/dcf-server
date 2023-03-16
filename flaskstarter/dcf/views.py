@@ -56,5 +56,23 @@ def dcf_to_py(id):
         print("e", e)
         return "error"
     
+
+
+@dcf_views.route('/command-config', methods=['GET'])
+@cross_origin()
+def command_config():
+    sym = s
+
+    commandPatterns = {
+        "dropcol":[None],
+        "fillna":[[3, 'fillVal', 'type', 'integer']],
+        "groupby":[[3, 'colMap', 'colEnum', ['null', 'sum', 'mean', 'count']]]
+    }
+    commandDefaults = {
+        "dropcol":  [sym("dropcol"), sym("df"), "col"],
+        "fillna":   [sym("fillna"), sym("df"), "col", 8],
+        "groupby": [sym("resample"), sym('df'), 'col', {}]
+    }
+    return dict(commandPatterns=commandPatterns, commandDefaults=commandDefaults)
     
 
