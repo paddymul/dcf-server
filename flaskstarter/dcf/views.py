@@ -13,12 +13,14 @@ dcf_views = Blueprint('dcf', __name__, url_prefix='/dcf')
 
 #make an @serve_df decorator that deals with query params and converting the df
 
-
+DEFAULT_CSV_PATH = './sample_data/2014-01-citibike-tripdata.csv'
+csv_path = os.getenv('DCF_CSV', DEFAULT_CSV_PATH)
 
 @dcf_views.route('/df/<id>', methods=['GET'])
 @cross_origin()
 def read_df(id):
-    df = pd.read_csv('./flaskstarter/dcf/sample-data/2014-01-citibike-tripdata.csv')
+
+    df = pd.read_csv(csv_path)
     slice_start = int(request.args.get('slice_start', 0))
     slice_end = request.args.get('slice_end', False)
     if slice_end is not False:
@@ -29,7 +31,7 @@ def read_df(id):
 @dcf_views.route('/transform_df/<id>', methods=['GET'])
 @cross_origin()
 def transform_df(id):
-    df = pd.read_csv('./flaskstarter/dcf/sample-data/2014-01-citibike-tripdata.csv')
+    df = pd.read_csv(csv_path)
     instructions = json.loads(request.args.get('instructions', None))
 
     #slice before or after??? probably after, otherwise run a dcf command
