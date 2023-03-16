@@ -6,7 +6,9 @@ from flask_login import login_required, current_user
 from flask_cors import cross_origin
 from ..extensions import db
 import json
-from .dcf_transform import dcf_transform, s, dcf_to_py as dcf_to_py_core
+#from .dcf_transform import dcf_transform, s, dcf_to_py as dcf_to_py_core
+from .lispy import s
+from .all_transforms import dcf_transform, dcf_to_py_core, command_patterns, command_defaults
 #from lispy import s
 dcf_views = Blueprint('dcf', __name__, url_prefix='/dcf')
 
@@ -75,6 +77,7 @@ def command_config():
         "fillna":   [sym("fillna"), sym("df"), "col", 8],
         "groupby": [sym("resample"), sym('df'), 'col', {}]
     }
-    return dict(commandPatterns=commandPatterns, commandDefaults=commandDefaults)
+    #return dict(commandPatterns=commandPatterns, commandDefaults=commandDefaults)
+    return dict(commandPatterns=command_patterns, commandDefaults=command_defaults)
     
 
