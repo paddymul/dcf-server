@@ -186,12 +186,14 @@ def make_interpreter(extra_funcs=None, extra_macros=None):
                     eval(exp, env)
                 x = x[-1]
             else:                    # (proc exp*)
+                print("exp", x)
                 exps = [eval(exp, env) for exp in x]
                 proc = exps.pop(0)
                 if isa(proc, Procedure):
                     x = proc.exp
                     env = Env(proc.parms, exps, proc.env)
                 else:
+
                     return proc(*exps)
 
 
@@ -212,8 +214,12 @@ def make_interpreter(extra_funcs=None, extra_macros=None):
                         quote_char = x.get('quote')
                         quote_func = quotes[quote_char]
                         ret_list.append([quote_func, list_parse(next(lst))])
+                    else:
+                        ret_list.append(x)
                 elif isinstance(x, dict):
-                    raise("we dont't currently support atoms of dictionary")
+                    print("x was a dict", x)
+                    ret_list.append(x)
+                    #raise("we dont't currently support atoms of dictionary")
                 else:
                     ret_list.append(x)
                 x = next(lst_iter)

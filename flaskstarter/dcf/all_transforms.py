@@ -52,12 +52,48 @@ class OneHot(Transform):
             "    df = df.join(one_hot)"]
         return "\n".join(commands)
 
+group_df = pd.DataFrame({'a':[10,20,30,40,50,60],
+                   'b':[1,2,3,4,5,6],
+                   'c':['q', 'q', 'q', 'q', 'w', 'w']})
+
+
+
+class GroupBy(Transform):
+    command_default = [s("groupby"), s('df'), 'col', {}]
+    command_pattern = [[3, 'colMap', 'colEnum', ['null', 'sum', 'mean', 'count']]]
+    @staticmethod 
+    def transform(df, col, col_spec):
+        grps = df.groupby(col)
+        df_contents = {}
+        for k, v in col_spec.items():
+            if v == "sum":
+                df_contents[k] = grps[k].apply(lambda x: x.sum())
+            elif v == "mean":
+                df_contents[k] = grps[k].apply(lambda x: x.mean())
+        #print(df_contents)
+        return pd.DataFrame(df_contents)
+
+    test_df = group_df
+    test_sequence = [s("groupby"), s('df'), 'c', dict(a='sum', b='mean')]
+    test_output = pd.DataFrame(
+        {'a':[100, 110], 'b':[2.5, 5.5]},
+        index=['q','w'])
+
+    @staticmethod 
+    def transform_to_py(df, col,colspec):
+        commands = [
+            "    col " % (col),
+            "    colspec %r " % (colspec)]
+        return "\n".join(commands)
+    
+
 
 
 command_defaults, command_patterns, dcf_transform, dcf_to_py_core = configure_dcf([
-    FillNA, DropCol, OneHot])
+    FillNA, DropCol, OneHot, GroupBy])
+#print(GroupBy.test_output)
+print(dcf_transform(GroupBy.test_sequence, GroupBy.test_df))
 
-    
 
 # class MakeCategorical(Transform):
 #     t_type = TransformType.column
