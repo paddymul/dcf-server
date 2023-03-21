@@ -54,11 +54,16 @@ DCF can only work on a single input dataframe shape at a time.  Any newly create
     * Serves up dataframes for use by frontend
 	* responds to dcf commands
 	* shows generated python code
+  * Developer User experience
+	* define DCF commands in python onloy
   * DCF Intepreter
     * Based on Peter Norvig's lispy.py, a simple syntax that is easy for the frontend to generate (no parens, just JSON arrays)
   * DCF core (actual transforms supported)
     * dropcol
 	* fillna
+	* one hot
+	* safe int
+	* GroupBy
 
 ## Next major features
   * Jupyter Notebook widget
@@ -67,9 +72,6 @@ DCF can only work on a single input dataframe shape at a time.  Any newly create
 	* Add a "send generated python to next cell" function
   * React frontend app
     * Styling
-	  * Tabs to switch between output_df, generated python, and DCF-command
-	  * Better column editor, maybe embed column commands into another table widget
-	  * Tabs for different types of transform commands
 	  * Server only, some UI for DataFrame selection
     * Pre filtering concept (only operate on first 1000 rows, some sample of all rows)
 	* DataFrame joining UI
@@ -77,7 +79,6 @@ DCF can only work on a single input dataframe shape at a time.  Any newly create
 	* Multi index columns
 	* DateTimeIndex support
   * DCF core
-    * OneHotEncoding
 	* MakeCategorical
 	* Quantize
 	* Resample
@@ -85,7 +86,6 @@ DCF can only work on a single input dataframe shape at a time.  Any newly create
 	* IndexShift
 	* Computed
 	* Stack/Unstack
-	* GroupBy
 	* RelationalExtract
 	* Split
 	* concat
