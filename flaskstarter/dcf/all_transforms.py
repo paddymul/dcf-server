@@ -69,16 +69,17 @@ class SafeInt(Transform):
     @staticmethod 
     def transform(df, col):
         df[col] = df[col].apply(safe_int)
+        #df[col] = 5
         return df
 
     @staticmethod 
     def transform_to_py(df, col):
-        return "    df[%s] = df[%s].apply(safe_int)" % (col, col)
+        return "    df['%s'] = df['%s'].apply(safe_int)" % (col, col)
 
 
 class GroupBy(Transform):
     command_default = [s("groupby"), s('df'), 'col', {}]
-    command_pattern = [[3, 'colMap', 'colEnum', ['null', 'sum', 'mean', 'count']]]
+    command_pattern = [[3, 'colMap', 'colEnum', ['null', 'sum', 'mean', 'median', 'count']]]
     @staticmethod 
     def transform(df, col, col_spec):
         grps = df.groupby(col)
@@ -88,7 +89,10 @@ class GroupBy(Transform):
                 df_contents[k] = grps[k].apply(lambda x: x.sum())
             elif v == "mean":
                 df_contents[k] = grps[k].apply(lambda x: x.mean())
-        #print(df_contents)
+            elif v == "median":
+                df_contents[k] = grps[k].apply(lambda x: x.median())
+            elif v == "count":
+                df_contents[k] = grps[k].apply(lambda x: x.count())
         return pd.DataFrame(df_contents)
 
     test_df = group_df
@@ -98,10 +102,22 @@ class GroupBy(Transform):
         index=['q','w'])
 
     @staticmethod 
-    def transform_to_py(df, col,colspec):
+    def transform_to_py(df, col, col_spec):
         commands = [
-            "    col " % (col),
-            "    colspec %r " % (colspec)]
+            "    grps = df.groupby('%s')" % col,
+            "    df_contents = {}"
+        ]
+        for k, v in col_spec.items():
+            if v == "sum":
+                commands.append("    df_contents['%s'] = grps['%s'].apply(lambda x: x.sum())" % (k, k))
+            elif v == "mean":
+                commands.append("    df_contents['%s'] = grps['%s'].apply(lambda x: x.mean())" % (k, k))
+            elif v == "median":
+                commands.append("    df_contents['%s'] = grps['%s'].apply(lambda x: x.median())" % (k, k))
+            elif v == "count":
+                commands.append("    df_contents['%s'] = grps['%s'].apply(lambda x: x.count())" % (k, k))
+        #print("commands", commands)
+        commands.append("    df = pd.DataFrame(df_contents)")
         return "\n".join(commands)
     
 
@@ -110,8 +126,12 @@ class GroupBy(Transform):
 
 command_defaults, command_patterns, dcf_transform, dcf_to_py_core = configure_dcf([
     FillNA, DropCol, OneHot, GroupBy, SafeInt])
+
+
+#print(dcf_to_py_core([GroupBy.test_sequence]))
 #print(GroupBy.test_output)
-print(dcf_transform(GroupBy.test_sequence, GroupBy.test_df))
+#todo, build in testing into the the classes at the time something is added to configure_dcf
+#print(dcf_transform(GroupBy.test_sequence, GroupBy.test_df))
 
 
 # class MakeCategorical(Transform):

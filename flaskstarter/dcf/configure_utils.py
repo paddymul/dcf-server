@@ -16,7 +16,9 @@ def configure_dcf(transforms):
     dcf_eval, raw_parse = make_interpreter(transform_lisp_primitives)
     def dcf_transform(instructions, df):
         df_copy = df.copy()
-        return dcf_eval(instructions, {'df':df_copy})
+        ret_val =  dcf_eval(instructions, {'df':df_copy})
+        #print(ret_val)
+        return ret_val
 
     convert_to_python, __unused = make_interpreter(to_py_lisp_primitives)
     def dcf_to_py(instructions):
@@ -26,6 +28,7 @@ def configure_dcf(transforms):
         #interpreter as 'begin'... that way the exact same instructions
         #could be sent to either interpreter.  For now, this will do
         individual_instructions =  [x for x in map(lambda x:convert_to_python(x, {'df':5}), instructions)]
+        #print("individual_instructions", individual_instructions)
         code_block =  '\n'.join(individual_instructions)
 
         return "def clean(df):\n" + code_block

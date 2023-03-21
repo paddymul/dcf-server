@@ -16,6 +16,7 @@ dcf_views = Blueprint('dcf', __name__, url_prefix='/dcf')
 #make an @serve_df decorator that deals with query params and converting the df
 
 DEFAULT_CSV_PATH = './sample_data/2014-01-citibike-tripdata.csv'
+#DEFAULT_CSV_PATH = './sample_data/problem.csv'
 csv_path = os.getenv('DCF_CSV', DEFAULT_CSV_PATH)
 
 @dcf_views.route('/df/<id>', methods=['GET'])
@@ -41,8 +42,9 @@ def transform_df(id):
 
     slice_start = int(request.args.get('slice_start', 0))
     slice_end = request.args.get('slice_end', False)
+    
     if slice_end is not False:
-        df = df[slice_start:int(slice_end)]
+        df = df.iloc[slice_start:int(slice_end)]
     return json.loads(df.to_json(orient='table', indent=2))
 
 
@@ -52,9 +54,7 @@ def dcf_to_py(id):
     instructions = json.loads(request.args.get('instructions', None))
     #return dcf_to_py(instructions)
     try:
-        print("instructions", instructions, type(instructions))
         py_string = dcf_to_py_core(instructions)
-        print("py_string", py_string)
         return dict(py=py_string)
     except Exception as e:
         print("e", e)
